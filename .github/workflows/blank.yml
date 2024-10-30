@@ -1,45 +1,75 @@
-print("Переклад на братську мову")
+from flask import Flask, request, render_template_string
 
+app = Flask(__name__)
+
+# HTML-шаблон для вебінтерфейсу
+html_template = """
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Братський Перекладач</title>
+  </head>
+  <body>
+    <h1>Переклад на братську мову</h1>
+    <form method="post">
+      <label for="word">Введіть слово для шифрування:</label>
+      <input type="text" id="word" name="word">
+      <button type="submit" name="action" value="encrypt">Зашифрувати</button>
+      <br><br>
+      <label for="encrypted_word">Введіть зашифроване слово:</label>
+      <input type="text" id="encrypted_word" name="encrypted_word">
+      <button type="submit" name="action" value="decrypt">Розшифрувати</button>
+    </form>
+
+    {% if result %}
+      <p>{{ result_text }}: {{ result }}</p>
+    {% endif %}
+  </body>
+</html>
+"""
+
+# Функція шифрування
 def encrypt(word):
-    # Визначаємо голосні українською
     vowels = "АЕЄИІЇОУЮЯаеєиіїоуюя"
     encrypted_word = ""
-
     for char in word:
         encrypted_word += char
         if char in vowels:
-            encrypted_word += "с" + char  # Додаємо "с" + голосну після кожної голосної
-
+            encrypted_word += "с" + char
     return encrypted_word
 
-
-# Приклад використання
-word = input("Введіть слово для шифрування: ")
-encrypted_word = encrypt(word)
-print("Зашифроване слово:", encrypted_word)
-
+# Функція розшифрування
 def decrypt(encrypted_word):
-    # Визначаємо голосні українською
     vowels = "АЕЄИІЇОУЮЯаеєиіїоуюя"
     decrypted_word = ""
     i = 0
-
     while i < len(encrypted_word):
         char = encrypted_word[i]
         decrypted_word += char
-
-        # Якщо символ - голосна, перевіряємо наступний символ
-        if char in vowels:
-            # Якщо наступний символ - "с", пропускаємо його
-            if i + 1 < len(encrypted_word) and encrypted_word[i + 1] == 'с':
-                i += 2  # Пропускаємо "с"
-
-        i += 1  # Переходимо до наступного символа
-
+        # Перевірка, чи є символ голосною і далі йде "с" та та ж сама голосна
+        if char in vowels and i + 2 < len(encrypted_word) and encrypted_word[i + 1] == 'с' and encrypted_word[i + 2] == char:
+            i += 2  # Пропускаємо "с" і повторну голосну
+        i += 1
     return decrypted_word
 
+# Маршрут для обробки запиту
+@app.route("/", methods=["GET", "POST"])
+def index():
+    result = None
+    result_text = ""
+    if request.method == "POST":
+        action = request.form["action"]
+        if action == "encrypt":
+            word = request.form["word"]
+            result = encrypt(word)
+            result_text = "Зашифроване слово"
+        elif action == "decrypt":
+            encrypted_word = request.form["encrypted_word"]
+            result = decrypt(encrypted_word)
+            result_text = "Розшифроване слово"
+    return render_template_string(html_template, result=result, result_text=result_text)
 
-# Приклад використання
-encrypted_word = input("Введіть зашифроване слово: ")
-decrypted_word = decrypt(encrypted_word)
-print("Розшифроване слово:", decrypted_word)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=81)
