@@ -1,0 +1,45 @@
+print("Переклад на братську мову")
+
+def encrypt(word):
+    # Визначаємо голосні українською
+    vowels = "АЕЄИІЇОУЮЯаеєиіїоуюя"
+    encrypted_word = ""
+
+    for char in word:
+        encrypted_word += char
+        if char in vowels:
+            encrypted_word += "с" + char  # Додаємо "с" + голосну після кожної голосної
+
+    return encrypted_word
+
+
+# Приклад використання
+word = input("Введіть слово для шифрування: ")
+encrypted_word = encrypt(word)
+print("Зашифроване слово:", encrypted_word)
+
+def decrypt(encrypted_word):
+    # Визначаємо голосні українською
+    vowels = "АЕЄИІЇОУЮЯаеєиіїоуюя"
+    decrypted_word = ""
+    i = 0
+
+    while i < len(encrypted_word):
+        char = encrypted_word[i]
+        decrypted_word += char
+
+        # Якщо символ - голосна, перевіряємо наступний символ
+        if char in vowels:
+            # Якщо наступний символ - "с", пропускаємо його
+            if i + 1 < len(encrypted_word) and encrypted_word[i + 1] == 'с':
+                i += 2  # Пропускаємо "с"
+
+        i += 1  # Переходимо до наступного символа
+
+    return decrypted_word
+
+
+# Приклад використання
+encrypted_word = input("Введіть зашифроване слово: ")
+decrypted_word = decrypt(encrypted_word)
+print("Розшифроване слово:", decrypted_word)
